@@ -352,3 +352,26 @@ button.close {
     display: none;
     opacity: 0;
 }
+.fa-stack-1x, .fa-stack-2x {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+	}
+	.fa-stack-1x {
+	    line-height: inherit;
+	}
+	.fa-inverse {
+    color: #fff;
+
+
+}
+:after, :before {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+}
+
+::selection {
+text-shadow: none;
+background: #fed136;
