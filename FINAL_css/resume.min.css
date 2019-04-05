@@ -115,7 +115,7 @@ a:hover{
 /* The Magic */
 .accordion:hover .accordion-item:hover .accordion-item-content,
 .accordion .accordion-item--default .accordion-item-content {
-    height: 20rem;
+    height: 10rem;
 }
 
 .accordion-item-content,
