@@ -411,27 +411,6 @@ function AquaSiteVisual() {
   );
 }
 
-function WearableVisual() {
-  return (
-    <svg className="visual" viewBox="0 0 440 260" role="img" aria-label="Illustration of a wearable circuit board under test">
-      <rect width="440" height="260" className="bench" />
-      <circle cx="170" cy="130" r="92" className="pcb" />
-      <circle cx="170" cy="130" r="80" className="pcb-inner" />
-      <rect x="138" y="98" width="64" height="64" rx="4" className="chip" />
-      <text x="170" y="134" textAnchor="middle" className="chip-label">MCU</text>
-      <rect x="112" y="178" width="30" height="16" className="chip small" />
-      <rect x="206" y="70" width="26" height="18" className="chip small" />
-      {[0, 1, 2, 3].map((i) => <circle key={i} cx={120 + i * 14} cy="76" r="4" className="pad" />)}
-      <path d="M120 76 C120 30 300 20 330 60" className="wire" />
-      <path d="M134 76 C140 40 300 40 330 80" className="wire wire-2" />
-      <rect x="318" y="50" width="92" height="56" rx="4" className="analyzer" />
-      <text x="328" y="70" className="mono-svg">UART 115200</text>
-      <text x="328" y="88" className="mono-svg dim-svg">boot&gt; ok_</text>
-      <path d="M300 190 h16 v-14 h16 v14 h16 v-14 h16 v14 h16 v-14 h16 v14" className="signal" />
-    </svg>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /* identity-mcp replay: recorded tool output from the sample org       */
 /* ------------------------------------------------------------------ */
@@ -460,18 +439,19 @@ const replays: Replay[] = [
   },
   {
     id: 'orphans',
-    question: 'Which service accounts have no owner?',
+    question: 'Which non-human identities have no owner?',
     steps: [
       {
         call: 'list_non_human_identities(unowned_only: true)',
         result: [
+          'agent-helpdesk      owner terminated 2026-09-30   Account Operators',
           'ci-legacy-token     owner terminated 2026-09-30   admin:org token scope',
           'svc-backup          owner terminated 2026-09-30   Backup Operators',
           'svc-metrics-export  no owner ever assigned        unused 232 days',
         ],
       },
     ],
-    answer: 'Three. ci-legacy-token and svc-backup belonged to Jonas Brandt, who left on September 30, and both hold privileged access. svc-metrics-export never had an owner and has not been used in 232 days.',
+    answer: 'Four. Three belonged to Jonas Brandt, who left on September 30, and all three hold privileged access, including the Helpdesk Agent, an AI agent that resets passwords on its own. svc-metrics-export never had an owner and has not been used in 232 days.',
   },
   {
     id: 'leaver',
@@ -564,20 +544,102 @@ function McpReplay() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Project visuals for the ISC repos                                     */
+/* ------------------------------------------------------------------ */
+
+function TransformVisual() {
+  return (
+    <div className="code-visual" role="img" aria-label="An ISC transform and its offline test results">
+      <pre className="code-json">{`{
+  "name": "Lifecycle State - From HR Status",
+  "type": "lookup",
+  "attributes": {
+    "input": { "type": "upper", ... },
+    "table": {
+      "P": "prehire", "A": "active",
+      "L": "leave",   "T": "inactive",
+      "default": "inactive"
+    }
+  }
+}`}</pre>
+      <pre className="code-run">{`$ isc-transforms test
+checked 7 transforms, 0 problem(s)
+ok   Lifecycle State: active
+ok   Lifecycle State: unknown status fails closed
+ok   Username: hyphen and apostrophe are removed
+...
+19 passed, 0 failed`}</pre>
+    </div>
+  );
+}
+
+function ReviewVisual() {
+  const rows = [
+    { who: 'Jonas Brandt', what: 'GitHub account · used after leaving', rec: 'revoke' },
+    { who: 'Hassan Ali', what: 'Domain Admins · unused 134 days', rec: 'revoke' },
+    { who: 'Dev Patel', what: 'tide-api write · from old team', rec: 'modify' },
+    { who: 'Ana Reyes', what: 'Platform-Eng · birthright, in use', rec: 'keep' },
+  ];
+  return (
+    <div className="review-visual" role="img" aria-label="An access review queue with recommendations">
+      <p className="mono review-head">MANAGER REVIEW · 32 ITEMS · 10 NEED ATTENTION</p>
+      {rows.map((r) => (
+        <div className="review-row" key={r.who}>
+          <div>
+            <strong>{r.who}</strong>
+            <span>{r.what}</span>
+          </div>
+          <em className={`rec rec-${r.rec}`}>{r.rec}</em>
+        </div>
+      ))}
+      <p className="mono review-foot">OVERRIDES NEED A COMMENT · NO “APPROVE ALL”</p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Content                                                              */
 /* ------------------------------------------------------------------ */
 
-// Anything in [brackets] is a placeholder: replace it before publishing.
+const EMAIL = 'petersenpdx@gmail.com';
+const GITHUB = 'https://github.com/petersenpdx';
+
+const certifications = [
+  { name: 'SailPoint Certified IdentityIQ Engineer', status: 'earned' },
+  { name: 'SailPoint Certified ISC Administrator', status: 'earned' },
+  { name: 'Claude Certified Architect – Foundations', status: 'in progress' },
+];
+
 const projects = [
   {
     id: 'identity-mcp',
     flip: true,
-    tag: 'OPEN SOURCE · AGENTIC AI + IAM',
+    tag: 'OPEN SOURCE · ISC APIS · AI AGENTS',
     title: 'identity-mcp',
-    blurb: 'A read-only MCP server that lets Claude answer identity governance questions: who has access to what, how they got it, and whether they should still have it. Eight tools, and none of them can change anything.',
-    stack: ['Python', 'Model Context Protocol', 'Claude', 'pytest'],
-    links: [{ label: 'GitHub', href: '[identity-mcp-repo-url]' }],
+    blurb: 'An MCP server that lets Claude answer governance questions about people, service accounts, and AI agents. It reads a SailPoint Identity Security Cloud tenant through the ISC Search API, keeps a passport for every AI agent (owner, sponsor, model, access, activity), and flags leavers, orphaned identities, and agents with more access than their sponsor. Read-only, with no tool that can change access.',
+    stack: ['Python', 'ISC Search API', 'Model Context Protocol', 'Claude', '54 tests'],
+    links: [{ label: 'GitHub', href: `${GITHUB}/identity-mcp` }],
     Visual: McpReplay,
+  },
+  {
+    id: 'isc-transforms',
+    flip: false,
+    tag: 'OPEN SOURCE · ISC TRANSFORMS',
+    title: 'isc-transforms',
+    blurb: 'Identity profile transforms for ISC (usernames, email, department, lifecycle state) kept as reviewable JSON, with an offline checker and test runner so transform logic is tested in CI before it reaches a tenant. Unknown lifecycle codes fail closed to inactive.',
+    stack: ['ISC transforms', 'Python', 'GitHub Actions', '19 test cases'],
+    links: [{ label: 'GitHub', href: `${GITHUB}/isc-transforms` }],
+    Visual: TransformVisual,
+  },
+  {
+    id: 'access-review',
+    flip: true,
+    tag: 'OPEN SOURCE · CERTIFICATIONS · AI-ASSISTED',
+    title: 'access-review',
+    blurb: 'An access certification queue that puts the evidence next to every decision: last use, how access was granted, peer comparison, and a keep, revoke, or modify recommendation. Claude can investigate the flagged items with read-only tools. A person decides every item, and the export is the audit record.',
+    stack: ['Python', 'JavaScript', 'Claude', 'Audit export'],
+    links: [{ label: 'GitHub', href: `${GITHUB}/access-review` }],
+    Visual: ReviewVisual,
   },
   {
     id: 'aquasite',
@@ -585,34 +647,34 @@ const projects = [
     tag: 'PERSONAL PROJECT · FULL STACK',
     title: 'AquaSite',
     blurb: 'A siting and environmental analysis tool for mariculture farms. It pulls tide, current, and ocean data from NOAA and ERDDAP onto an interactive map, so you can see whether a stretch of water can support a farm.',
-    stack: ['Leaflet.js', 'Node.js', 'Express', 'NOAA CO-OPS', 'ERDDAP', 'Google Maps Platform'],
-    links: [{ label: 'Live demo', href: '[aquasite-demo-url]' }, { label: 'Source', href: '[aquasite-repo-url]' }],
+    stack: ['Leaflet.js', 'Node.js', 'Express', 'NOAA CO-OPS', 'ERDDAP'],
+    links: [] as { label: string; href: string }[],
     Visual: AquaSiteVisual,
   },
-  {
-    id: 'wearable',
-    flip: true,
-    tag: 'HARDWARE · REVERSE ENGINEERING',
-    title: 'Reviving a discontinued wearable',
-    blurb: '[One or two sentences: which device, why you opened it up, and what you got working again.]',
-    stack: ['[Tools you used]', '[e.g. logic analyzer]', '[firmware]'],
-    links: [{ label: 'Write-up', href: '[writeup-url]' }],
-    Visual: WearableVisual,
-  },
+];
+
+// IIQ experience mapped to its Identity Security Cloud counterpart.
+const iscMap = [
+  { iiq: 'Applications and connectors', isc: 'Sources', mine: '120+ applications through AD, JDBC, Oracle EBS, Salesforce, SCIM, and web services' },
+  { iiq: 'Identity mappings and attribute rules', isc: 'Identity profiles and transforms', mine: 'Attribute logic rebuilt as tested ISC transforms in isc-transforms' },
+  { iiq: 'BeanShell rules', isc: 'Cloud rules and connector rules', mine: 'Correlation, build map, and provisioning rules across federal and telecom deployments' },
+  { iiq: 'Lifecycle events and workflows', isc: 'Lifecycle states and workflows', mine: 'Joiner, mover, and leaver flows, including access gated on completed training' },
+  { iiq: 'Roles, certifications, policies', isc: 'Roles, access profiles, certification campaigns', mine: '200+ business and 300+ IT roles, with event-based reviews on transfer' },
+  { iiq: 'Custom Java and REST integrations', isc: 'ISC REST APIs and SaaS connectors in TypeScript', mine: 'ISC Search API client in identity-mcp; React, TypeScript, and Node from startup work' },
 ];
 
 const work = [
   {
-    title: 'Federal IdentityIQ program',
+    title: 'Federal ICAM consulting',
     detail: 'Senior SailPoint developer on a team of six for a federal agency. Built joiner, mover, and leaver workflows across AD, SCIM, REST, and flat-file connectors, gated access on completed training through an LMS integration, and containerized IdentityIQ on Azure.',
     outcome: 'Team of 6 · containerized IIQ on Azure',
     flow: 'EASY DYNAMICS · 2023–NOW',
   },
   {
     title: 'Governing GitHub service accounts and bots',
-    detail: 'Brought bots and tokens in GitHub Enterprise Cloud under IdentityIQ through direct REST API calls, with human access provisioned through Entra ID and Microsoft Graph.',
+    detail: 'Brought bots and tokens in GitHub Enterprise Cloud under SailPoint governance through direct REST API calls, with human access provisioned through Entra ID and Microsoft Graph.',
     outcome: 'Owners and reviews for non-human identities',
-    flow: 'IIQ → GITHUB REST · GRAPH',
+    flow: 'GITHUB REST · MICROSOFT GRAPH',
   },
   {
     title: 'Role-based access from the ground up',
@@ -632,35 +694,47 @@ const work = [
 const career = [
   {
     years: '2009–2018',
-    title: 'Quality engineering',
-    where: 'Genentech, including a large biotech plant built in South Korea · BIOTRONIK · Berkeley Advanced Biomaterials · small and large pharma, biotech, and medical device companies',
-    did: 'Nine years as a quality engineer, auditor, and Lean Six Sigma practitioner. Ran inspections and audits, wrote and reviewed SOPs, managed CAPA and change control, and taught teams how to work within them, from small device makers to very large biotech plants.',
-    gave: 'A control only works if people can follow it, and every change needs a record.',
-    certs: ['ASQ Certified Quality Engineer', 'ASQ Certified Quality Auditor', 'ASQ Certified Quality Process Analyst', 'Six Sigma Green Belt'],
+    title: 'Audit and controls',
+    where: 'Quality engineering at Genentech, including a large biotech plant built in South Korea · BIOTRONIK · Berkeley Advanced Biomaterials',
+    did: 'Nine years as a quality engineer and auditor in pharma, biotech, and medical devices: inspections, audits, SOPs, CAPA, and change control, and training teams to work within them.',
+    gave: 'Access reviews and certifications are audits. I spent nine years on both sides of one.',
+    certs: ['ASQ Certified Quality Engineer', 'ASQ Certified Quality Auditor', 'Six Sigma Green Belt'],
   },
   {
     years: '2018–2020',
-    title: 'Software development',
+    title: 'Startups: React, TypeScript, Node',
     where: 'Tech Academy bootcamp · Mission Ready Marketing · GreenStand · co-founder, FairTree',
-    did: 'A 900-hour bootcamp, then a lead-generation app for realtors in React, TypeScript, and Node, and databases for a nonprofit tracking tree planting in Africa. Co-founded FairTree, an environmental consultancy, and stayed with it for five years.',
-    gave: 'I build the integrations and tools myself instead of only configuring them.',
+    did: 'Built a lead-generation app for realtors in React, TypeScript, and Node, and data tools for a nonprofit tracking tree planting. Co-founded FairTree, an environmental consultancy, and stayed with it for five years.',
+    gave: 'ISC custom connectors are TypeScript on Node, the stack I shipped startup apps in.',
     certs: [],
   },
   {
     years: '2020–now',
-    title: 'Identity & access management',
-    where: 'GCI · Easy Dynamics, on a federal program',
-    did: 'Lead IdentityIQ engineer at an Alaska telecom, then senior SailPoint developer for a federal agency. Roles, lifecycle workflows, connectors, certifications, and upgrades.',
+    title: 'SailPoint IIQ and ISC',
+    where: 'GCI · Easy Dynamics, federal ICAM',
+    did: 'Lead IdentityIQ engineer at an Alaska telecom, then senior SailPoint developer on federal programs, working in IdentityIQ and Identity Security Cloud.',
     gave: 'Where both meet: governance that holds up in an audit and works for the people using it.',
-    certs: ['SailPoint Certified IdentityIQ Engineer'],
+    certs: ['SailPoint IdentityIQ Engineer', 'SailPoint ISC Administrator'],
   },
 ];
 
-const links = [
-  { label: 'Email', href: 'mailto:petersenpdx@gmail.com' },
-  { label: 'LinkedIn', href: '[linkedin-url]' },
-  { label: 'GitHub', href: 'https://github.com/petersenpdx' },
-];
+function CopyEmail() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.location.href = `mailto:${EMAIL}`;
+    }
+  };
+  return (
+    <button type="button" className="copy-email" onClick={copy} aria-live="polite">
+      {copied ? 'Copied ✓' : 'Copy address'}
+    </button>
+  );
+}
 
 function App() {
   return (
@@ -669,22 +743,31 @@ function App() {
         <a className="brand" href="#top"><span className="brand-mark">MP</span>Mark Petersen</a>
         <nav>
           <a href="#projects">Projects</a>
+          <a href="#isc">IIQ → ISC</a>
           <a href="#work">Work</a>
           <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+          <a className="nav-contact" href="#contact">Contact</a>
         </nav>
       </header>
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="mono accent">IAM ENGINEER · ANCHORAGE, AK · 61.2° N</p>
-          <h1>I govern who can touch what, for people <span className="hl">and</span> machines.</h1>
-          <p className="lede">SailPoint IdentityIQ engineer working across Active Directory, Entra ID, and GitHub Enterprise. Off the clock I build map apps and take apart hardware.</p>
+          <p className="mono accent">IAM ENGINEER · ANCHORAGE, AK · REMOTE</p>
+          <h1>SailPoint engineer, <span className="hl">IIQ and Identity Security Cloud.</span></h1>
+          <p className="hero-sub">Federal ICAM consulting at Easy Dynamics.</p>
+          <p className="lede">Identity governance across Active Directory, Entra ID, and GitHub Enterprise, for people and non-human identities. Off the clock I build apps and LLM agents to explore how to govern them.</p>
+          <ul className="cert-row" aria-label="Certifications">
+            {certifications.map((c) => (
+              <li key={c.name} className={c.status === 'earned' ? 'cert-earned' : 'cert-progress'}>
+                <span aria-hidden="true">{c.status === 'earned' ? '✓' : '◷'}</span>
+                <span className="cert-name">{c.name}{c.status !== 'earned' && <em> · {c.status}</em>}</span>
+              </li>
+            ))}
+          </ul>
           <div className="hero-actions">
-            <a className="button" href="#projects">See my projects</a>
-            <a className="text-link" href="#contact">Get in touch →</a>
+            <a className="button" href={`mailto:${EMAIL}`}>Email me</a>
+            <a className="text-link" href="#projects">See the ISC projects →</a>
           </div>
-          <p className="now mono"><span className="pulse" aria-hidden="true" /> NOW: preparing for SailPoint ISC Administrator certification</p>
         </div>
         <LifecycleRing />
       </section>
@@ -703,18 +786,46 @@ function App() {
                 <h3>{title}</h3>
                 <p>{blurb}</p>
                 <div className="chips">{stack.map((s) => <span key={s}>{s}</span>)}</div>
-                <div className="project-links">
-                  {plinks.map((l) => <a key={l.label} href={l.href}>{l.label} ↗</a>)}
-                </div>
+                {plinks.length > 0 && (
+                  <div className="project-links">
+                    {plinks.map((l) => <a key={l.label} href={l.href}>{l.label} ↗</a>)}
+                  </div>
+                )}
               </div>
             </article>
           ))}
         </div>
       </section>
 
+      <section className="isc" id="isc">
+        <div className="section-head">
+          <p className="mono accent">02 · IIQ TO ISC</p>
+          <h2>The same identity problems, in Identity Security Cloud.</h2>
+        </div>
+        <div className="isc-table" role="table" aria-label="IdentityIQ experience mapped to Identity Security Cloud">
+          <div className="isc-row isc-header" role="row">
+            <span role="columnheader">IdentityIQ</span>
+            <span role="columnheader">Identity Security Cloud</span>
+            <span role="columnheader">My work</span>
+          </div>
+          {iscMap.map((r) => (
+            <div className="isc-row" role="row" key={r.isc}>
+              <span role="cell" className="isc-iiq">{r.iiq}</span>
+              <span role="cell" className="isc-isc"><span className="isc-arrow" aria-hidden="true">→</span>{r.isc}</span>
+              <span role="cell" className="isc-mine">{r.mine}</span>
+            </div>
+          ))}
+        </div>
+        <article className="migration">
+          <p className="mono accent">SKILL · IIQ TO ISC MIGRATION</p>
+          <h3>Assessment and planning for moving IIQ to ISC</h3>
+          <p>Inventorying applications, rules, and workflows; deciding what moves as configuration, what becomes a transform or cloud rule, and what needs to be redesigned; and sequencing the move so certifications and lifecycle events keep running.</p>
+        </article>
+      </section>
+
       <section className="work" id="work">
         <div className="section-head">
-          <p className="mono accent">02 · DAY JOB</p>
+          <p className="mono accent">03 · DAY JOB</p>
           <h2>Identity engineering</h2>
         </div>
         <div className="work-list">
@@ -734,7 +845,7 @@ function App() {
 
       <section className="career" id="about">
         <div className="section-head">
-          <p className="mono accent">03 · HOW I GOT HERE</p>
+          <p className="mono accent">04 · HOW I GOT HERE</p>
           <h2>Quality taught me to audit. Code taught me to build. Identity is where I do both.</h2>
           <p className="career-origin mono">B.S. CHEMISTRY · UNIVERSITY OF OREGON</p>
         </div>
@@ -757,13 +868,22 @@ function App() {
 
       <footer id="contact">
         <div>
-          <p className="mono accent">04 · CONTACT</p>
-          <h2>Have an identity problem worth solving?</h2>
+          <p className="mono accent">05 · CONTACT</p>
+          <h2>Hiring for SailPoint or ISC? Let’s talk.</h2>
           <p>Open to remote IAM engineering roles. Email me and I’ll send a résumé tailored to your role.</p>
         </div>
-        <nav className="footer-links" aria-label="Contact links">
-          {links.map((l) => <a key={l.label} href={l.href}>{l.label} ↗</a>)}
-        </nav>
+        <div className="contact-card">
+          <p className="mono dim">EMAIL</p>
+          <a className="contact-email" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+          <div className="contact-actions">
+            <a className="button" href={`mailto:${EMAIL}?subject=SailPoint%20role`}>Write an email</a>
+            <CopyEmail />
+          </div>
+          <p className="contact-more">
+            <a href={GITHUB}>GitHub ↗</a>
+            <span>Anchorage, Alaska · UTC−9 · remote</span>
+          </p>
+        </div>
         <p className="footer-note mono">© 2026 MARK PETERSEN · MADE IN ALASKA</p>
       </footer>
     </main>
