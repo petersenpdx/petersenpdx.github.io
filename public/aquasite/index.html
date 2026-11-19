@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AquaSite | Mark Petersen</title>
+  <meta name="description" content="Score a stretch of water for shellfish or seaweed farming using live NOAA, ERDDAP and Google Maps data." />
+  <meta name="theme-color" content="#0f2a33" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../">← markuspetersen.com</a>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">≋</span>
+      <span>AquaSite</span>
+    </div>
+    <span class="status" id="status" role="status" aria-live="polite"></span>
+  </header>
+
+  <main class="layout">
+    <div id="map" class="map" aria-label="Map. Click the water to assess a site."></div>
+
+    <aside class="panel" aria-label="Site assessment">
+      <section class="controls">
+        <form id="search" class="search" role="search">
+          <label class="sr-only" for="q">Find a place</label>
+          <input id="q" name="q" type="search" placeholder="Find a bay, inlet or town" autocomplete="off" />
+          <button type="submit">Go</button>
+        </form>
+        <ul id="search-results" class="search-results" hidden></ul>
+
+        <label class="field">
+          <span>Species</span>
+          <select id="species"></select>
+        </label>
+        <p class="hint" id="species-notes"></p>
+      </section>
+
+      <section id="result" class="result">
+        <div class="empty">
+          <h1>Is this good water for a farm?</h1>
+          <p>Click anywhere on the water. AquaSite pulls satellite temperature and chlorophyll from ERDDAP, depth from Google, and tides and currents from the nearest NOAA stations, then scores the spot for the species you picked.</p>
+        </div>
+      </section>
+
+      <section class="saved">
+        <h2>Saved sites</h2>
+        <ul id="sites" class="sites"><li class="muted">None yet.</li></ul>
+        <div id="owner" class="owner" hidden>
+          <label class="field"><span>Owner key</span><input id="owner-key" type="password" autocomplete="off" /></label>
+        </div>
+      </section>
+
+      <footer class="credits">
+        Data: <a href="https://tidesandcurrents.noaa.gov/" target="_blank" rel="noopener">NOAA CO-OPS</a>,
+        <a href="https://coastwatch.pfeg.noaa.gov/erddap/" target="_blank" rel="noopener">NOAA CoastWatch ERDDAP</a>,
+        Google Maps Platform. Scores are a screening aid, not a permit or a survey.
+      </footer>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./config.js"></script>
+  <script src="./app.js" type="module"></script>
+</body>
+</html>
