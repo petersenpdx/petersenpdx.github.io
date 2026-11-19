@@ -646,9 +646,9 @@ const projects = [
     flip: false,
     tag: 'PERSONAL PROJECT · FULL STACK',
     title: 'AquaSite',
-    blurb: 'A siting and environmental analysis tool for mariculture farms. It pulls tide, current, and ocean data from NOAA and ERDDAP onto an interactive map, so you can see whether a stretch of water can support a farm.',
-    stack: ['Leaflet.js', 'Node.js', 'Express', 'NOAA CO-OPS', 'ERDDAP'],
-    links: [] as { label: string; href: string }[],
+    blurb: 'A siting tool for shellfish and seaweed farms. Click the water and it pulls satellite temperature and chlorophyll from ERDDAP, depth from Google, and tides and currents from the nearest NOAA stations, then scores the spot for the species you pick and shows which reading drove the score.',
+    stack: ['Leaflet.js', 'Node.js', 'Express', 'PostgreSQL', 'NOAA CO-OPS', 'ERDDAP', 'Google Maps Platform'],
+    links: [{ label: 'Live demo', href: './aquasite/' }],
     Visual: AquaSiteVisual,
   },
 ];
